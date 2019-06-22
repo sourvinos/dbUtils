@@ -2,31 +2,60 @@ VERSION 5.00
 Object = "{839D0F5D-B7D7-41B7-A3B4-85D69300B8C1}#98.0#0"; "iGrid300_10Tec.ocx"
 Begin VB.Form Compare 
    Caption         =   "Database Comparison"
-   ClientHeight    =   6810
+   ClientHeight    =   9195
    ClientLeft      =   60
    ClientTop       =   345
    ClientWidth     =   10380
    Icon            =   "Compare.frx":0000
    LinkTopic       =   "Form1"
-   ScaleHeight     =   6810
+   ScaleHeight     =   9195
    ScaleWidth      =   10380
    StartUpPosition =   3  'Windows Default
+   Begin VB.Frame myFrame 
+      Caption         =   "Frames"
+      BeginProperty Font 
+         Name            =   "Consolas"
+         Size            =   11.25
+         Charset         =   161
+         Weight          =   400
+         Underline       =   0   'False
+         Italic          =   0   'False
+         Strikethrough   =   0   'False
+      EndProperty
+      Height          =   2040
+      Left            =   2550
+      TabIndex        =   4
+      Top             =   6900
+      Width           =   3690
+   End
+   Begin VB.PictureBox Seperator 
+      BackColor       =   &H80000003&
+      BorderStyle     =   0  'None
+      Height          =   90
+      Left            =   1050
+      MousePointer    =   7  'Size N S
+      ScaleHeight     =   90
+      ScaleWidth      =   5865
+      TabIndex        =   3
+      Top             =   6375
+      Width           =   5865
+   End
    Begin VB.CommandButton cmdClear 
       Caption         =   "Clear grid"
       Height          =   465
       Left            =   2025
       TabIndex        =   2
-      Top             =   6300
+      Top             =   5475
       Width           =   1890
    End
    Begin iGrid300_10Tec.iGrid grdGrid 
-      Height          =   6165
+      Height          =   5340
       Left            =   75
       TabIndex        =   1
       Top             =   75
       Width           =   10215
       _ExtentX        =   18018
-      _ExtentY        =   10874
+      _ExtentY        =   9419
       BorderStyle     =   1
       DefaultRowHeight=   19
       BeginProperty Font {0BE35203-8F91-11CE-9DE3-00AA004BB851} 
@@ -47,7 +76,7 @@ Begin VB.Form Compare
       Height          =   465
       Left            =   75
       TabIndex        =   0
-      Top             =   6300
+      Top             =   5475
       Width           =   1890
    End
 End
@@ -57,6 +86,9 @@ Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = True
 Attribute VB_Exposed = False
 Option Explicit
+
+Private lngOldY As Long
+Private blnIsMoving As Boolean
 
 Private Sub cmdClear_Click()
 
@@ -161,7 +193,50 @@ Private Sub Form_Load()
     
     cmdCompare.Enabled = True
     cmdClear.Enabled = False
+    
+    Seperator.Left = 0
+    Seperator.Width = Me.Width
+    Seperator.Top = LoadSeperatorPositionFromRegistry
+    
+    PositionControls
 
 End Sub
 
+Private Sub Seperator_MouseDown(Button As Integer, Shift As Integer, X As Single, Y As Single)
 
+    If Button = vbLeftButton Then
+        lngOldY = Y
+        blnIsMoving = True
+    End If
+    
+End Sub
+
+Private Sub Seperator_MouseMove(Button As Integer, Shift As Integer, X As Single, Y As Single)
+    
+    If blnIsMoving Then
+        Seperator.Top = Seperator.Top - (lngOldY - Y)
+        PositionControls
+    End If
+    
+End Sub
+
+Private Sub Seperator_MouseUp(Button As Integer, Shift As Integer, X As Single, Y As Single)
+
+    blnIsMoving = False
+    
+    SaveSetting App.EXEName, "Seperator Position", "Top", Seperator.Top
+
+End Sub
+
+Private Function LoadSeperatorPositionFromRegistry()
+
+    LoadSeperatorPositionFromRegistry = GetSetting(App.EXEName, "Seperator Position", "Top")
+
+End Function
+
+Private Function PositionControls()
+
+    myFrame.Top = Seperator.Top + 200
+    myFrame.Height = grdGrid.Height - Seperator.Top - 200
+
+End Function
